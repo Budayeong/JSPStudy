@@ -15,7 +15,7 @@ int result = HelloJava.myFn();
 
 	<h2>처음 만들어 보는 JSP</h2>
 	<%
-	out.println(str + "JSP..!!");
+	out.println(str + " JSP..!!");
 	%>
 	<p>
 		1부터 10까지의 합은 <%=result %> 입니다.
