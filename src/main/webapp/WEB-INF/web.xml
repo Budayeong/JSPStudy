@@ -25,16 +25,37 @@
   포워드한다. 즉, 에러가 발생한 페이지에서 처리하지 않고 에러를 처리할 수 있는 페이지를
   별도로 구성하여 에러를 처리한다.
    -->
-  <error-page>
-  	<error-code>404</error-code>
-  	<location>/02ImplicitObject/Exception.jsp</location>
-  </error-page>
-  <error-page>
-  	<error-code>405</error-code>
-  	<location>/02ImplicitObject/Exception.jsp</location>
-  </error-page>
-  <error-page>
-  	<error-code>500</error-code>
-  	<location>/02ImplicitObject/Exception.jsp</location>
-  </error-page>
+<!--   <error-page> -->
+<!--   	<error-code>404</error-code> -->
+<!--   	<location>/02ImplicitObject/Exception.jsp</location> -->
+<!--   </error-page> -->
+<!--   <error-page> -->
+<!--   	<error-code>405</error-code> -->
+<!--   	<location>/02ImplicitObject/Exception.jsp</location> -->
+<!--   </error-page> -->
+<!--   <error-page> -->
+<!--   	<error-code>500</error-code> -->
+<!--   	<location>/02ImplicitObject/Exception.jsp</location> -->
+<!--   </error-page> -->
+  
+  <!-- 데이터베이스 연결을 위한 접속 정보를 컨텍스트 초기화 파라미터로 설정 -->
+  <context-param>
+  	<param-name>OracleDriver</param-name>
+  	<param-value>oracle.jdbc.OracleDriver</param-value>
+  </context-param>
+  <context-param>
+  	<param-name>OracleURL</param-name>
+  	<param-value>jdbc:oracle:thin:@localhost:1521:xe</param-value>
+  </context-param>
+  <context-param>
+  	<param-name>OracleId</param-name>
+  	<param-value>musthave</param-value>
+  </context-param>
+  <context-param>
+  	<param-name>OraclePwd</param-name>
+  	<param-value>1234</param-value>
+  </context-param>
+  
+  
+  
 </web-app>
