@@ -63,9 +63,10 @@ public class BoardDAO extends JDBConnect {
 		*/
 		String query ="SELECT * FROM board ";
 		if (map.get("searchWord") != null) {
-			query += " WHERE " + map.get("searchField") +" " + " LIKE '% " + map.get("searchWord") + " % ' ";
+			query += " WHERE " + map.get("searchField") + " " 
+					+ " LIKE '%" + map.get("searchWord") + "%' ";
 		}
-		query += " ORDER BY num DESC ";
+		query += " ORDER BY num DESC";
 		
 		try {
 //			쿼리 실행 및 결과셋 반환
@@ -97,6 +98,37 @@ public class BoardDAO extends JDBConnect {
 		return bbs;
 	}
 		
+//	게시물 입력을 위한 메서드
+	public int insertWrite(BoardDTO dto) {
+//		사용자가 작성한 내용은 DTO에서 저장한 후 인수로 전달
+		int result = 0 ;
 		
+		try {
+//			인파라미터가 있는 insert 쿼리문 작성
+			String query = "INSERT INTO board ( "
+					+ " num, title, content, id, visitcount) "
+					+ " VALUES ( "
+					+ " seq_board_num.NEXTVAL, ?, ?, ?, 0)";
+			
+//			일련번호의 경우 시퀀스를 통해 입력한다
+			
+//			prepared인스턴스 생성 및 인파라미터 설정
+			psmt = con.prepareStatement(query);
+			psmt.setString(1, dto.getTitle());
+			psmt.setString(2, dto.getContent());
+			psmt.setString(3, dto.getId());
+			
+//			쿼리문 실행
+			result  = psmt.executeUpdate();
+			
+		}
+		catch (Exception e) {
+			System.out.println("게시물 입력 중 예외 발생");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	
 	
 }
