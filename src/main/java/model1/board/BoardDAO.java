@@ -22,10 +22,10 @@ public class BoardDAO extends JDBConnect {
 		int totalCount = 0;
 		
 //		게시물 수를 얻어오기 위한 쿼리문 작성
-		String query = "select count(*) from board";
+		String query = "SELECT COUNT(*) FROM board";
 //		검색어가 있는 경우 where절을 추가하여 조건에 맞는 게시물만 select
 		if (map.get("searchWord") != null) {
-			query += " WHERE " + map.get("searchField")+" " + " LIKE '%" + map.get("searhWrod") + "%'"; 
+			query += " WHERE " + map.get("searchField")+ " " + " LIKE '%" + map.get("searchWord") + "%'"; 
 		}
 		
 		try {
@@ -73,13 +73,13 @@ public class BoardDAO extends JDBConnect {
 			stmt = con.createStatement();
 			rs = stmt.executeQuery(query);
 			
-//			2개 이상의 레코드가 반환될 수 있으므로 whle문을 사용
+//			2개 이상의 레코드가 반환될 수 있으므로 while문을 사용
 			while(rs.next()) {
 //				하나의 레코드를 저장할 수 있는 dto 객체 생성
 				BoardDTO dto = new BoardDTO();
 				
 //				setter를 이용해 각 컬럼의 값을 멤버변수에 저장
-				dto.setName(rs.getString("num"));
+				dto.setNum(rs.getString("num"));
 				dto.setTitle(rs.getString("title"));
 				dto.setContent(rs.getString("content"));
 				dto.setPostdate(rs.getDate("postdate"));
@@ -98,7 +98,7 @@ public class BoardDAO extends JDBConnect {
 		return bbs;
 	}
 		
-//	게시물 입력을 위한 메서드
+//	게시물 입력
 	public int insertWrite(BoardDTO dto) {
 //		사용자가 작성한 내용은 DTO에서 저장한 후 인수로 전달
 		int result = 0 ;
@@ -129,6 +129,113 @@ public class BoardDAO extends JDBConnect {
 		return result;
 	}
 
+//	매개변수로 전달된 게시물의 일련번호로 게시물을 인출함
+	public BoardDTO selectView(String num) {
+//		하나의 레코드를 저장하기 위한 DTO인스턴스 생성
+		BoardDTO dto = new BoardDTO();
+		
+		/* 내부조인(inner join)을 통해 member테이블과 name 컬럼까지 select한다 */
+		String query = "SELECT B.*, M.name"
+				+ " FROM board B inner join member M"
+				+ " ON B.id=M.id"
+				+ " WHERE num=?";
+		
+		try {
+			psmt = con.prepareStatement(query);
+			psmt.setString(1, num);
+			rs = psmt.executeQuery();
+			
+			/*
+			일련번호는 중복되지 않으므로 단 한개의 게시물만 인출하게된다.
+			따라서 while문이 아닌 if문으로 처리한다.
+			next()는 ResultSet으로 반환된 레코드를 확인해서 존재하면 true를 반환해준다.
+			*/
+			if(rs.next()) {
+				/* 각 컬럼의 값을 추출할 때 1부터 시작하는 인덱스와 컬럼명
+				 둘 다 사용할 수 있다. 날짜인 경우에는 getDate()로 인출할 수 있다. */
+				dto.setNum(rs.getString(1));
+				dto.setTitle(rs.getString(2));
+				dto.setContent(rs.getString("content"));
+				dto.setPostdate(rs.getDate("postdate"));
+				dto.setId(rs.getString("id"));
+				dto.setVisitcount(rs.getString("visitcount"));
+				dto.setName(rs.getString("name"));
+			}
+		}
+		catch (Exception e) {
+			System.out.println("게시물 상세보기 중 예외발생");
+			e.printStackTrace();
+		}
+		
+		return dto;
+	}
+
+//	조회수 증가
+//	게시물의 조회수를 1 증가시킨다
+	public void updateVisitCount(String num) {
+		/* 게시물의 일련번호를 통해 visitcount를 1 증가시킴.
+		 이 컬럼은 number타입이므로 사칙연산이 가능하다. */
+		String query =  "UPDATE board SET"
+						+ " visitcount = visitcount + 1"
+						+ " WHERE num=?";
+		
+		try {
+			psmt = con.prepareStatement(query);
+			psmt.setString(1, num);
+			rs = psmt.executeQuery();
+		}
+		catch (Exception e) {
+			System.out.println("게시물 조회수 증가 중 예외발생");
+			e.printStackTrace();
+		}
+		
+	}
+	
+//	게시물 수정
+	public int updateEdit(BoardDTO dto) {
+		int result = 0;
+		
+		try {
+//			일련번호와 일치하는 게시물의 제목과 내용을 수정하는 update 쿼리문
+			String query = "UPDATE board "
+					+ "SET title=?, content=? "
+					+ "WHERE num=?";
+			
+//			쿼리문의 인파라미터 설정 및 실행
+			psmt = con.prepareStatement(query);
+			psmt.setString(1, dto.getTitle());
+			psmt.setString(2, dto.getContent());
+			psmt.setString(3, dto.getNum());
+//			수정된 레코드의 개수를 반환
+			result = psmt.executeUpdate();
+		}
+		catch (Exception e) {
+			System.out.println("게시물 수정 중 예외 발생");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+//	게시물 삭제
+	public int deletePost(BoardDTO dto) {
+		int result = 0;
+		
+		try {
+//			게시물 삭제를 위한 delete 쿼리문 작성
+			String query = "DELETE FROM board WHERE num=?";
+			
+			psmt = con.prepareStatement(query);
+			psmt.setString(1, dto.getNum());
+			
+			result = psmt.executeUpdate();
+		}
+		catch (Exception e) {
+			System.out.println("게시물 삭제 중 예외 발생");
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
 	
 	
 }
