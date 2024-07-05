@@ -236,6 +236,56 @@ public class BoardDAO extends JDBConnect {
 		return result;
 	}
 	
+//	페이징 기능이 있는 서브쿼리문으로 변경한 메서드
+	public List<BoardDTO> selectListPage(Map<String, Object> map) {
+		List<BoardDTO> bbs = new Vector<BoardDTO>();
+		
+//		인파라미터가 있는 서브쿼리문 작성
+		String query ="SELECT * FROM ( "
+				+ "    SELECT Tb.*, ROWNUM rNum FROM ( "
+				+ "        SELECT * FROM board ";
+		
+		if (map.get("searchWord") != null) {
+			query += " WHERE " + map.get("searchField")
+					+ " LIKE '%" + map.get("searchWord") + "%' ";
+		}
+		
+		query += "		ORDER BY num DESC "
+				+ "     ) Tb "
+				+ "   ) "
+//				+ "    WHERE rNum BETWEEN ? AND ?";
+				+ "    WHERE rNum >= ? AND rNum <= ?";
+		
+		try {
+//			prepared 인스턴스 생성 및 인파라미터 설정
+			psmt = con.prepareStatement(query);
+			psmt.setString(1, map.get("start").toString());
+			psmt.setString(2, map.get("end").toString());
+			rs = psmt.executeQuery();
+//			2개 이상의 레코드가 반환될 수 있으므로 while문을 사용
+			while(rs.next()) {
+//				하나의 레코드를 저장할 수 있는 dto 객체 생성
+				BoardDTO dto = new BoardDTO();
+				
+//				setter를 이용해 각 컬럼의 값을 멤버변수에 저장
+				dto.setNum(rs.getString("num"));
+				dto.setTitle(rs.getString("title"));
+				dto.setContent(rs.getString("content"));
+				dto.setPostdate(rs.getDate("postdate"));
+				dto.setId(rs.getString("id"));
+				dto.setVisitcount(rs.getString("visitcount"));
+				
+//				레코드 하나를 dto에 저장 후 List에 추가
+				bbs.add(dto);
+			}
+		}
+		catch (Exception e) {
+			System.out.println("게시물 조회 중 예외 발생");
+			e.printStackTrace();
+		}
+//		인출한 레코드를 저장한 List를 JSP로 반환
+		return bbs;
+	}
 	
 	
 }
