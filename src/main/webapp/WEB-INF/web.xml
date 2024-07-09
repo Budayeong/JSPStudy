@@ -74,5 +74,26 @@
   </context-param>
   
   
+  <!-- 요청명에 대한 매핑을 설정 -->
+  <servlet>
+  	<!-- 3.서블릿 클래스를 패키지명과 함께 등록  -->
+  	<servlet-name>HelloServlet</servlet-name>
+  	<servlet-class>servlet.HelloServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<!-- 2.요청을 받을 서블릿명을 지정 -->
+  	<servlet-name>HelloServlet</servlet-name>
+  	<!-- 1.요청명을 기술. 컨텍스트 루트를 제외한 / 로 시작하는 경로를 사용 -->
+  	<url-pattern>/12Servlet/HelloServlet.do</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+  	<servlet-name>DirectServletPrint</servlet-name>
+  	<servlet-class>servlet.DirectServletPrint</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>DirectServletPrint</servlet-name>
+  	<url-pattern>/12Servlet/DirectServletPrint.do</url-pattern>
+  </servlet-mapping>
   
 </web-app>
