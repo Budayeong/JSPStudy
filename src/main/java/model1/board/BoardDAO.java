@@ -25,7 +25,8 @@ public class BoardDAO extends JDBConnect {
 		String query = "SELECT COUNT(*) FROM board";
 //		검색어가 있는 경우 where절을 추가하여 조건에 맞는 게시물만 select
 		if (map.get("searchWord") != null) {
-			query += " WHERE " + map.get("searchField")+ " " + " LIKE '%" + map.get("searchWord") + "%'"; 
+			query += " WHERE " + map.get("searchField")+ " " 
+					+ " LIKE '%" + map.get("searchWord") + "%'"; 
 		}
 		
 		try {

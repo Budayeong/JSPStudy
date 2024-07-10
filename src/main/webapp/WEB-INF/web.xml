@@ -65,12 +65,12 @@
   <!-- 1. 한 페이지에 출력할 게시물 개수 설정 -->
   <context-param>
   	<param-name>POSTS_PER_PAGE</param-name>
-  	<param-value>10</param-value>
+  	<param-value>2</param-value>
   </context-param>
   <!-- 2. 한 블럭당 출력할 페이지번호의 개수설정 -->
   <context-param>
   	<param-name>PAGES_PER_BLOCK</param-name>
-  	<param-value>5</param-value>
+  	<param-value>2</param-value>
   </context-param>
   
   
@@ -109,6 +109,18 @@
   <servlet-mapping>
   	<servlet-name>MemberAuth</servlet-name>
   	<url-pattern>/12Servlet/MemberAuth.mvc</url-pattern>
+  </servlet-mapping>
+  
+  
+  <!-- 모델2 방식으로 제작하는 서블릿 게시판  -->
+  <!-- 목록 매핑 -->
+  <servlet>
+  	<servlet-name>MVCBoardList</servlet-name>
+  	<servlet-class>model2.mvcboard.ListController</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>MVCBoardList</servlet-name>
+  	<url-pattern>/mvcboard/list.do</url-pattern>
   </servlet-mapping>
   
 </web-app>
