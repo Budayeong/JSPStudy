@@ -5,9 +5,6 @@ import java.util.Map;
 import java.util.Vector;
 
 import common.DBConnPool;
-import common.JDBConnect;
-import jakarta.servlet.ServletContext;
-import model1.board.BoardDTO;
 
 //커넥션풀을 통한 DB연결을 위해 클래스 상속
 public class MVCBoardDAO extends DBConnPool {
@@ -96,5 +93,174 @@ public class MVCBoardDAO extends DBConnPool {
 		return board;
 	}
 	
+//	글쓰기 페이지에서 전송한 폼값을 테이블에 insert
+	public int insertWrite(MVCBoardDTO dto) {
+		int result = 0 ;
+		try{
+			/*
+			쿼리문에서 사용한 시퀀스는 모델1 게시판에서 생성한 내용 그대로 사용.
+			나머지 값들은 컨트롤러에서 받은 후 모델(DAO)로 전달함.
+			*/
+			String query = "INSERT INTO mvcboard ( "
+						+ " idx, name, title, content, ofile, sfile, pass ) "
+						+ " VALUES ( "
+						+ " seq_board_num.NEXTVAL, ?, ?, ?, ?, ?, ? )";
+			
+//			인파라미터가 없는 정적쿼리문을 실행하므로 Statement인스턴스 생성
+			psmt = con.prepareStatement(query);
+			psmt.setString(1, dto.getName());
+			psmt.setString(2, dto.getTitle());
+			psmt.setString(3, dto.getContent());
+			psmt.setString(4, dto.getOfile()); //원본파일명
+			psmt.setString(5, dto.getSfile()); //서버에 저장된 파일명
+			psmt.setString(6, dto.getPass());
+			result = psmt.executeUpdate();
+		}
+		catch (Exception e) {
+			System.out.println("게시물 입력 중 예외 발생");
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
+//	상세보기를 위해 일련번호에 해당하는 레코드 1개를 인출해서 반환
+	public MVCBoardDTO selectView(String idx) {
+		
+		MVCBoardDTO dto = new MVCBoardDTO();
+		
+//		인파라미터가 있는 select 쿼리문
+		String query = "SELECT * FROM mvcboard WHERE idx=?";
+		try {
+//			인파라미터 설정 및 쿼리실행
+			psmt = con.prepareStatement(query);
+			psmt.setString(1, idx);
+			rs = psmt.executeQuery();
+			
+//			결과를 DTO에 저장
+			if(rs.next()) {
+				dto.setIdx(rs.getString(1));
+				dto.setName(rs.getString(2));
+				dto.setTitle(rs.getString(3));
+				dto.setContent(rs.getString(4));
+				dto.setPostdate(rs.getDate(5));
+				dto.setOfile(rs.getString(6));
+				dto.setSfile(rs.getString(7));
+				dto.setDowncount(rs.getInt(8));
+				dto.setPass(rs.getString(9));
+				dto.setVisitcount(rs.getInt(10));
+			}
+		}
+		catch (Exception e) {
+			System.out.println("게시물 상세보기 중 예외발생");
+			e.printStackTrace();
+		}
+		
+		return dto;
+	}
+	
+//	게시물의 조회수 증가
+	public void updateVisitCount(String idx) {
+		String query =  "UPDATE mvcboard SET"
+						+ " visitcount = visitcount + 1"
+						+ " WHERE idx=?";
+		
+		try {
+			psmt = con.prepareStatement(query);
+			psmt.setString(1, idx);
+			rs = psmt.executeQuery();
+		}
+		catch (Exception e) {
+			System.out.println("게시물 조회수 증가 중 예외발생");
+			e.printStackTrace();
+		}
+		
+	}
+
+//	파일 다운로드 카운트 증가
+	public void downCountPlus(String idx) {
+		String sql =  "UPDATE mvcboard SET"
+						+ " downcount = downcount + 1"
+						+ " WHERE idx=?";
+		
+		try {
+			psmt = con.prepareStatement(sql);
+			psmt.setString(1, idx);
+			psmt.executeUpdate();
+		}
+		catch (Exception e) {}
+		
+	}
+	
+//	패스워드 검증
+	public boolean confirmPassword(String pass, String idx) {
+		boolean isCorr = true;
+		
+		try {
+			/*
+			패스워드와 일련번호 두가지 조건에 만족하는 게시물이 있는지 확인.
+			게시물을 인출할 목적이 아니므로 count()로 충분.
+			*/
+			String sql = "SELECT COUNT(*) FROM mvcboard WHERE pass=? AND idx=?";
+			psmt = con.prepareStatement(sql);
+			psmt.setString(1, pass);
+			psmt.setString(2, idx);
+			rs = psmt.executeQuery();
+//			count() 함수는 항상 결과가 있으므로 조건문 없이 호출
+			rs.next();
+			if(rs.getInt(1) == 0) {
+//				조건에 맞는 게시물이 없다면 false로 변경
+				isCorr = false;
+			}
+		}
+		catch (Exception e) {
+//			예외가 발생하여 확인이 불가한 경우에도 false를 반환
+			isCorr = false;
+			e.printStackTrace();
+		}
+		return isCorr;
+	}
+	
+//	일련번호에 해당하는 게시물을 삭제
+	public int deletePost(String idx) {
+		int result = 0;
+		try {
+			String query = "DELETE FROM mvcboard WHERE idx=?";
+			psmt = con.prepareStatement(query);
+			psmt.setString(1, idx);
+			result = psmt.executeUpdate();
+		}
+		catch (Exception e) {
+			System.out.println("게시물 삭제 중 예외 발생");
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+//	게시물 수정
+	public int updatePost(MVCBoardDTO dto) {
+		int result = 0;
+		try {
+//			수정을 위한 update 쿼리문 작성 (일련번호와 패스워드까지 조건문에 추가)
+			String query = "UPDATE mvcboard "
+						+ "SET title=?, name=?, content=?, ofile=?, sfile=? "
+						+ "WHERE idx=? AND pass=?";
+			
+			psmt = con.prepareStatement(query);
+			psmt.setString(1, dto.getTitle());
+			psmt.setString(2, dto.getName());
+			psmt.setString(3, dto.getContent());
+			psmt.setString(4, dto.getOfile());
+			psmt.setString(5, dto.getSfile());
+			psmt.setString(6, dto.getIdx());
+			psmt.setString(7, dto.getPass());
+			
+			result = psmt.executeUpdate();
+		}
+		catch (Exception e) {
+			System.out.println("게시물 수정 중 예외 발생");
+			e.printStackTrace();
+		}
+		return result;
+	}
 	
 }

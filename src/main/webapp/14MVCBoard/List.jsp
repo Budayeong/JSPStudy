@@ -67,8 +67,8 @@
 		            <td>${ row.postdate }</td>
 		            <td>
 		            <!-- 다운로드 링크는 첨부파일이 있을때만 표시 -->
-		            <c:if test="${ not empty row.sfile }">
-		            	<a href="../mvcboard/download.do?ofile=${ row.file }&sfile=${ row.sfile }&idx=${ row.idx }">[Down]</a>	
+		            <c:if test="${ not empty row.ofile }">
+		            	<a href="../mvcboard/download.do?ofile=${ row.ofile }&sfile=${ row.sfile }&idx=${ row.idx }">[Down]</a>	
 		            </c:if>
 		            </td>
 		        </tr>
